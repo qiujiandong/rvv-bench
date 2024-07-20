@@ -3,9 +3,9 @@
 #define HAS_F16 0
 
 /* the maximum number of bytes to allocate, minimum of 4096 */
-#define MAX_MEM (1024*1024*32)
+#define MAX_MEM (1024*1024*16)
 /* the byte count for the next run */
-#define NEXT(c) (c + c/7 + 3)
+#define NEXT(c) (c + c/17 + 3)
 
 /* minimum number of repeats, to sample median from */
 #define MIN_REPEATS 10
