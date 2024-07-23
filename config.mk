@@ -34,10 +34,8 @@ CFLAGS += -T${LD_SCRIPT} ${LDFLAGS}
 endif
 
 ifeq (${SDK}, Nuclei)
-# Nuclei SDK
-CURRENT_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+# Nuclei gcc version: riscv64-unknown-linux-gnu-gcc (g598f284ab) 13.1.1 20230713
 TOOL_PREFIX = riscv64-unknown-linux-gnu-
-# gcc version: riscv64-unknown-linux-gnu-gcc (g598f284ab) 13.1.1 20230713
 endif
 
 # common part
