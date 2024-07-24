@@ -472,7 +472,6 @@ ifelse(m_LMUL,8,`m_gen_code_m8(m_code)')
 .endr
 	addi a0, a0, -1
 	bnez a0, 1b
-	fence.i
 #ifdef READ_MCYCLE
 	csrr a0, mcycle
 #else

@@ -15,7 +15,8 @@
 # define BENCH_VOLATILE(x) ({__asm volatile("" : "+g"(x) : "g"(x) : "memory");})
 # define BENCH_VOLATILE_REG(x) ({__asm volatile("" : "+r"(x) : "r"(x) : "memory");})
 # define BENCH_VOLATILE_MEM(x) ({__asm volatile("" : "+m"(x) : "m"(x) : "memory");})
-# define BENCH_FENCE() ({__asm volatile("fence.i");})
+// # define BENCH_FENCE() ({__asm volatile("fence.i");})
+# define BENCH_FENCE() ({;})
 
 
 #define BENCH_MAY_ALIAS __attribute__((__may_alias__))

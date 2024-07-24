@@ -17,8 +17,8 @@ WARN=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter
 # basic CFLAGS
 CFLAGS := -march=rv64gcv_zba_zbb_zbs -mcmodel=medany -mabi=lp64d -O3 --static ${WARN}
 
-SDK := K230
-# SDK := Nuclei
+# SDK := K230
+SDK := Nuclei
 
 ifeq (${SDK}, K230)
 # K230 SDK v1.6

@@ -338,9 +338,6 @@ m_benchmarks_all gen_strings
 	.endr
 		addi a0, a0, -1
 		bnez a0, 1b
-#if __riscv_zifencei
-		fence.i
-#endif
 #ifdef READ_MCYCLE
 		csrr a0, mcycle
 #else
