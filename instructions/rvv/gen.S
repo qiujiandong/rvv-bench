@@ -285,6 +285,7 @@ define(`m_bench_all',`
 	m_bench_vxi($1, T_A, vsrl)
 	m_bench_vxi($1, T_A, vsra)
 	m_bench_vxi($1, T_A, vssrl)
+	m_bench_vxi($1, T_A, vssra)
 
 	m_bench_vx($1, T_A, vdivu)
 	m_bench_vx($1, T_A, vdiv)
@@ -296,13 +297,13 @@ define(`m_bench_all',`
 	m_bench_vx($1, T_A, vmulh)
 	m_bench_xv($1, T_A, vmadd)
 	m_bench_xv($1, T_A, vmacc)
+	m_bench_xv($1, T_A, vnmsub)
+	m_bench_xv($1, T_A, vnmsac)
 
 	m_bench_wxi($1, T_N, vnsrl)
 	m_bench_wxi($1, T_N, vnsra)
 	m_bench_wxi($1, T_N, vnclipu)
 	m_bench_wxi($1, T_N, vnclip)
-	m_bench_xv($1,  T_N, vnmsub)
-	m_bench_xv($1,  T_N, vnmsac)
 
 	m_bench_vx($1, T_W, vwaddu)
 	m_bench_vx($1, T_W, vwadd)
@@ -354,10 +355,10 @@ define(`m_bench_all',`
 	m_bench_fv($1, T_F, vfmacc)
 	m_bench_fv($1, T_F, vfmsac)
 
-	m_bench_fv($1, T_FN, vfnmsac)
-	m_bench_fv($1, T_FN, vfnmacc)
-	m_bench_fv($1, T_FN, vfnmsub)
-	m_bench_fv($1, T_FN, vfnmadd)
+	m_bench_fv($1, T_F, vfnmsac)
+	m_bench_fv($1, T_F, vfnmacc)
+	m_bench_fv($1, T_F, vfnmsub)
+	m_bench_fv($1, T_F, vfnmadd)
 
 	m_mask($1, bench_vwredsumuvs, T_WR, m_nop, vwredsumu.vs, v8, v16, v24)
 	m_mask($1, bench_vwredsumvs,  T_WR, m_nop, vwredsum.vs,  v8, v16, v24)
