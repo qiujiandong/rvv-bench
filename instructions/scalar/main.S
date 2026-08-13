@@ -38,11 +38,43 @@
 #define IF_VF64(...)
 #endif
 
+#define bench s0
+#define ptr s1
+
 .macro m_nop
 .endm
 
-#define bench s0
-#define ptr s1
+.macro m_fp_x w t b
+	li a4, ~\b
+	and a5, t0, a4
+	fmv.\w\().x fa0, a5
+	and a5, t1, a4
+	fmv.\w\().x fa1, a5
+	and a5, t2, a4
+	fmv.\w\().x fa2, a5
+	and a5, t3, a4
+	fmv.\w\().x fa3, a5
+	fmv.\t ft0, fa0
+	fmv.\t ft1, fa0
+	fmv.\t ft2, fa0
+	fmv.\t ft3, fa0
+	fmv.\t ft4, fa0
+	fmv.\t ft5, fa0
+	fmv.\t ft6, fa0
+	fmv.\t ft7, fa0
+	fmv.\t ft8, fa0
+	fmv.\t ft9, fa0
+.endm
+
+.macro m_fp_h
+	m_fp_x h, h, 0x4000
+.endm
+.macro m_fp_s
+	m_fp_x w, s, 0x40000000
+.endm
+.macro m_fp_d
+	m_fp_x d, d, 0x4000000000000000
+.endm
 
 .macro m_t9or31
 ori t9, t9, 31
@@ -61,22 +93,26 @@ fsgnj.s
 .endm
 
 .macro m_f1ne0
+m_fp_s
 fmv.x.w a0, fa1
 ori a0, a0, 1
 fmv.w.x fa1, a0
 .endm
 
 .macro m_f1abs
+m_fp_s
 fabs.s  fa1,fa1
 .endm
 
 .macro m_d1ne0
+m_fp_d
 fmv.x.d a0, fa1
 ori a0, a0, 1
 fmv.d.x fa1, a0
 .endm
 
 .macro m_d1abs
+m_fp_d
 fabs.d  fa1,fa1
 .endm
 
@@ -178,78 +214,78 @@ fabs.d  fa1,fa1
 
 	# F
 #if __riscv_f
-	\f bench_fmvwx,     m_nop, fmv.w.x   ,f, t8
-	\f bench_fmvxw,     m_nop, fmv.x.w   ,,  fa1
-	\f bench_fcvt_w_s,  m_nop, fcvt.w.s  ,, fa1
-	\f bench_fcvt_wu_s, m_nop, fcvt.wu.s ,, fa1
-	\f bench_fcvt_s_w,  m_nop, fcvt.s.w  ,f, t8
-	\f bench_fcvt_s_wu, m_nop, fcvt.s.wu ,f, t8
-	IF64(\f bench_fcvt_l_s,  m_nop, fcvt.l.s  ,, fa1)
-	IF64(\f bench_fcvt_lu_s, m_nop, fcvt.lu.s ,, fa1)
-	IF64(\f bench_fcvt_s_l,  m_nop, fcvt.s.l  ,f, t8)
-	IF64(\f bench_fcvt_s_lu, m_nop, fcvt.s.lu ,f, t8)
+	\f bench_fmvwx,     m_fp_s, fmv.w.x   ,f, t8
+	\f bench_fmvxw,     m_fp_s, fmv.x.w   ,,  fa1
+	\f bench_fcvt_w_s,  m_fp_s, fcvt.w.s  ,, fa1
+	\f bench_fcvt_wu_s, m_fp_s, fcvt.wu.s ,, fa1
+	\f bench_fcvt_s_w,  m_fp_s, fcvt.s.w  ,f, t8
+	\f bench_fcvt_s_wu, m_fp_s, fcvt.s.wu ,f, t8
+	IF64(\f bench_fcvt_l_s,  m_fp_s, fcvt.l.s  ,, fa1)
+	IF64(\f bench_fcvt_lu_s, m_fp_s, fcvt.lu.s ,, fa1)
+	IF64(\f bench_fcvt_s_l,  m_fp_s, fcvt.s.l  ,f, t8)
+	IF64(\f bench_fcvt_s_lu, m_fp_s, fcvt.s.lu ,f, t8)
 
-	\f bench_flw, m_nop, flw ,f, 13(ptr)
-	\f bench_fsw, m_nop, fsw ,f, 13(ptr)
+	\f bench_flw, m_fp_s, flw ,f, 13(ptr)
+	\f bench_fsw, m_fp_s, fsw ,f, 13(ptr)
 
-	\f bench_fadds,   m_nop,   fadd.s   ,f, fa1, fa2
-	\f bench_fsubs,   m_nop,   fsub.s   ,f, fa1, fa2
-	\f bench_fmuls,   m_nop,   fmul.s   ,f, fa1, fa2
+	\f bench_fadds,   m_fp_s,  fadd.s   ,f, fa1, fa2
+	\f bench_fsubs,   m_fp_s,  fsub.s   ,f, fa1, fa2
+	\f bench_fmuls,   m_fp_s,  fmul.s   ,f, fa1, fa2
 	\f bench_fdivs,   m_f1ne0, fdiv.s   ,f, fa1, fa2
 	\f bench_fsqrts,  m_f1abs, fsqrt.s  ,f, fa1
-	\f bench_fmadds,  m_nop,   fmadd.s  ,f, fa1, fa2, fa3
-	\f bench_fmsubs,  m_nop,   fmsub.s  ,f, fa1, fa2, fa3
-	\f bench_fnmsubs, m_nop,   fnmsub.s ,f, fa1, fa2, fa3
-	\f bench_fnmadds, m_nop,   fnmadd.s ,f, fa1, fa2, fa3
+	\f bench_fmadds,  m_fp_s,  fmadd.s  ,f, fa1, fa2, fa3
+	\f bench_fmsubs,  m_fp_s,  fmsub.s  ,f, fa1, fa2, fa3
+	\f bench_fnmsubs, m_fp_s,  fnmsub.s ,f, fa1, fa2, fa3
+	\f bench_fnmadds, m_fp_s,  fnmadd.s ,f, fa1, fa2, fa3
 
-	\f bench_fsgnjs,  m_nop, fsgnj.s  ,f, fa1, fa2
-	\f bench_fsgnjns, m_nop, fsgnjn.s ,f, fa1, fa2
-	\f bench_fsgnjxs, m_nop, fsgnjx.s ,f, fa1, fa2
-	\f bench_fmins, m_nop, fmin.s ,f, fa1, fa2
-	\f bench_fmaxs, m_nop, fmax.s ,f, fa1, fa2
+	\f bench_fsgnjs,  m_fp_s, fsgnj.s  ,f, fa1, fa2
+	\f bench_fsgnjns, m_fp_s, fsgnjn.s ,f, fa1, fa2
+	\f bench_fsgnjxs, m_fp_s, fsgnjx.s ,f, fa1, fa2
+	\f bench_fmins, m_fp_s, fmin.s ,f, fa1, fa2
+	\f bench_fmaxs, m_fp_s, fmax.s ,f, fa1, fa2
 
-	\f bench_feqs,    m_nop, feq.s    ,, fa1, fa2
-	\f bench_flts,    m_nop, flt.s    ,, fa1, fa2
-	\f bench_fles,    m_nop, fle.s    ,, fa1, fa2
-	\f bench_fclasss, m_nop, fclass.s ,, fa1
+	\f bench_feqs,    m_fp_s, feq.s    ,, fa1, fa2
+	\f bench_flts,    m_fp_s, flt.s    ,, fa1, fa2
+	\f bench_fles,    m_fp_s, fle.s    ,, fa1, fa2
+	\f bench_fclasss, m_fp_s, fclass.s ,, fa1
 #endif
 
 	# D
 #if __riscv_d && __riscv_xlen != 32
-	\f bench_fmvdx,   m_nop, fmv.d.x   ,f, t8
-	\f bench_fmvxd,   m_nop, fmv.x.d   ,,  fa1
-	\f bench_fcvtwd,  m_nop, fcvt.w.d  ,,  fa1
-	\f bench_fcvtwud, m_nop, fcvt.wu.d ,,  fa1
-	\f bench_fcvtdw,  m_nop, fcvt.d.w  ,f, t8
-	\f bench_fcvtdwu, m_nop, fcvt.d.wu ,f, t8
-	\f bench_fcvtld,  m_nop, fcvt.l.d  ,,  fa1
-	\f bench_fcvtlud, m_nop, fcvt.lu.d ,,  fa1
-	\f bench_fcvtdl,  m_nop, fcvt.d.l  ,f, t8
-	\f bench_fcvtdlu, m_nop, fcvt.d.lu ,f, t8
+	\f bench_fmvdx,   m_fp_d, fmv.d.x   ,f, t8
+	\f bench_fmvxd,   m_fp_d, fmv.x.d   ,,  fa1
+	\f bench_fcvtwd,  m_fp_d, fcvt.w.d  ,,  fa1
+	\f bench_fcvtwud, m_fp_d, fcvt.wu.d ,,  fa1
+	\f bench_fcvtdw,  m_fp_d, fcvt.d.w  ,f, t8
+	\f bench_fcvtdwu, m_fp_d, fcvt.d.wu ,f, t8
+	\f bench_fcvtld,  m_fp_d, fcvt.l.d  ,,  fa1
+	\f bench_fcvtlud, m_fp_d, fcvt.lu.d ,,  fa1
+	\f bench_fcvtdl,  m_fp_d, fcvt.d.l  ,f, t8
+	\f bench_fcvtdlu, m_fp_d, fcvt.d.lu ,f, t8
 
-	\f bench_fld, m_nop, fld ,f, 13(ptr)
-	\f bench_fsd, m_nop, fsd ,f, 13(ptr)
+	\f bench_fld, m_fp_d, fld ,f, 13(ptr)
+	\f bench_fsd, m_fp_d, fsd ,f, 13(ptr)
 
-	\f bench_faddd,   m_nop,   fadd.d   ,f, fa1, fa2
-	\f bench_fsubd,   m_nop,   fsub.d   ,f, fa1, fa2
-	\f bench_fmuld,   m_nop,   fmul.d   ,f, fa1, fa2
+	\f bench_faddd,   m_fp_d,  fadd.d   ,f, fa1, fa2
+	\f bench_fsubd,   m_fp_d,  fsub.d   ,f, fa1, fa2
+	\f bench_fmuld,   m_fp_d,  fmul.d   ,f, fa1, fa2
 	\f bench_fdivd,   m_d1ne0, fdiv.d   ,f, fa1, fa2
 	\f bench_fsqrtd,  m_d1abs, fsqrt.d  ,f, fa1
-	\f bench_fmaddd,  m_nop,   fmadd.d  ,f, fa1, fa2, fa3
-	\f bench_fmsubd,  m_nop,   fmsub.d  ,f, fa1, fa2, fa3
-	\f bench_fnmsubd, m_nop,   fnmsub.d ,f, fa1, fa2, fa3
-	\f bench_fnmaddd, m_nop,   fnmadd.d ,f, fa1, fa2, fa3
+	\f bench_fmaddd,  m_fp_d,  fmadd.d  ,f, fa1, fa2, fa3
+	\f bench_fmsubd,  m_fp_d,  fmsub.d  ,f, fa1, fa2, fa3
+	\f bench_fnmsubd, m_fp_d,  fnmsub.d ,f, fa1, fa2, fa3
+	\f bench_fnmaddd, m_fp_d,  fnmadd.d ,f, fa1, fa2, fa3
 
-	\f bench_fsgnjd,  m_nop, fsgnj.d  ,f, fa1, fa2
-	\f bench_fsgnjnd, m_nop, fsgnjn.d ,f, fa1, fa2
-	\f bench_fsgnjxd, m_nop, fsgnjx.d ,f, fa1, fa2
-	\f bench_fmind, m_nop, fmin.d ,f, fa1, fa2
-	\f bench_fmaxd, m_nop, fmax.d ,f, fa1, fa2
+	\f bench_fsgnjd,  m_fp_d, fsgnj.d  ,f, fa1, fa2
+	\f bench_fsgnjnd, m_fp_d, fsgnjn.d ,f, fa1, fa2
+	\f bench_fsgnjxd, m_fp_d, fsgnjx.d ,f, fa1, fa2
+	\f bench_fmind, m_fp_d, fmin.d ,f, fa1, fa2
+	\f bench_fmaxd, m_fp_d, fmax.d ,f, fa1, fa2
 
-	\f bench_feqd,    m_nop, feq.d    ,, fa1, fa2
-	\f bench_fltd,    m_nop, flt.d    ,, fa1, fa2
-	\f bench_fled,    m_nop, fle.d    ,, fa1, fa2
-	\f bench_fclassd, m_nop, fclass.d ,, fa1
+	\f bench_feqd,    m_fp_d, feq.d    ,, fa1, fa2
+	\f bench_fltd,    m_fp_d, flt.d    ,, fa1, fa2
+	\f bench_fled,    m_fp_d, fle.d    ,, fa1, fa2
+	\f bench_fclassd, m_fp_d, fclass.d ,, fa1
 #endif
 
 
@@ -427,19 +463,13 @@ randomize:
 	li a2, 0x78bd642fc2b2ae35
 #endif
 
-	# fill t* & ft* with wyhash
+	# fill t* with wyhash
 	.macro randomize_reg x xs:vararg
 		add a0, a0, a1
 		xor a5, a0, a2
 		mulh a6, a0, a5
 		mulhu a7, a0, a5
 		xor \x, a6, a7
-		and a5, \x, a4 # zero upper f16/f32/f64 exponent bit
-#if __riscv_flen == 64 && __riscv_xlen == 64
-		fmv.d.x f\()\x, a5
-#else
-		fmv.w.x f\()\x, a5
-#endif
 		.ifnb \xs
 			randomize_reg \xs
 		.endif
