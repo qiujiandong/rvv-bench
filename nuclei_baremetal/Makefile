@@ -1,5 +1,9 @@
 TARGET = sgemm
 
+CORE ?= ux1000fd
+
+ARCH_EXT ?= v_zba_zbb_zbc_zbs
+
 SRCDIRS = .
 
 INCDIRS = .
