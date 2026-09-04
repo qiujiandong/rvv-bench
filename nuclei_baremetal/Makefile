@@ -1,0 +1,11 @@
+TARGET = sgemm
+
+SRCDIRS = .
+
+INCDIRS = .
+
+STDCLIB = newlib_small
+
+COMMON_FLAGS := -O2 -DCUSTOM_HOST -DREAD_MCYCLE -DNOLIBC_DEFINE_ONLY
+
+include $(NUCLEI_SDK_ROOT)/Build/Makefile.base
