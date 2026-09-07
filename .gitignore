@@ -5,3 +5,8 @@ compile_commands.json
 *.o.d
 *.elf
 *.map
+*.dasm
+*.dump
+*.hex
+*.srec
+*.verilog
