@@ -1,4 +1,4 @@
-TARGET = sgemm
+TARGET = vme_test
 
 CORE ?= ux1000fd
 
@@ -16,6 +16,7 @@ INCDIRS = .
 
 STDCLIB = newlib_small
 
-COMMON_FLAGS := -O2 -DCUSTOM_HOST -DREAD_MCYCLE -DNOLIBC_DEFINE_ONLY
+COMMON_FLAGS := -g -O2 -gdwarf-4 -gstrict-dwarf
 
 include $(NUCLEI_SDK_ROOT)/Build/Makefile.base
+
