@@ -4,7 +4,9 @@
 
 #define MAX_MEM (1024 * 1024)
 #define MAT_SIZE (32)
+#ifndef VLM_BASE
 #define VLM_BASE (0x60000000UL)
+#endif
 typedef unsigned long ux;
 
 typedef void Sgemm(float *restrict c, float const *restrict a,
