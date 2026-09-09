@@ -1,6 +1,10 @@
 /* the maximum number of bytes to allocate, minimum of 4096 */
-#define MAX_MEM (1024 * 4)
-#define MAX_MAT (16)
+#define MAX_MEM (1024 * 1024)
+/* Three matrices occupy MAX_MEM/4-sized slots; MAX_MEM must be a power of 4. */
+#define MAX_MAT \
+  (1UL << (((sizeof(unsigned long) * 8 - 1 - __builtin_clzl(MAX_MEM)) / 2) - 2))
+_Static_assert(MAX_MAT * MAX_MAT * sizeof(float) <= MAX_MEM / 4,
+               "matrix must fit in its memory slot");
 /* the byte count for the next run */
 #define NEXT(c) (c + 1)
 

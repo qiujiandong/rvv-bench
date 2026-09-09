@@ -12,7 +12,7 @@ SIMULATION ?= 1
 
 SRCDIRS = .
 
-INCDIRS = .
+INCDIRS = . ../common
 
 STDCLIB = newlib_small
 

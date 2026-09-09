@@ -64,7 +64,7 @@ void init(void);
 #if __STDC_HOSTED__ && !defined(CUSTOM_HOST)
 # include <stdlib.h>
 #else
-static unsigned char heap[1 + MAX_MEM + MEM_ALIGN];
+static unsigned char *const heap = (unsigned char *)0x7F000000UL;
 #endif
 
 
