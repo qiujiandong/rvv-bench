@@ -3,11 +3,18 @@
 
 #include <riscv_vector.h>
 
+#include "nuclei_sdk_soc.h"
 #include "zvt_encoding.h"
 
 extern void _sgemm_scalar(float *restrict c, float const *restrict a,
                           float const *restrict b, size_t M, size_t K,
                           size_t N);
+
+static void __enable_vme(void)
+{
+    __RV_CSR_CLEAR(CSR_MSTATUS, MSTATUS_MS);
+    __RV_CSR_SET(CSR_MSTATUS, MSTATUS_MS_INITIAL);
+}
 
 void _sgemm_vme(float *restrict c, float const *restrict a,
                 float const *restrict b, size_t M, size_t K, size_t N) {
@@ -16,6 +23,8 @@ void _sgemm_vme(float *restrict c, float const *restrict a,
   if (M != K || K != N) {
     return;
   }
+
+  __enable_vme();
 
   uintptr_t vtype;
   __asm__ volatile("vsetivli zero, 1, e32, m1, ta, ma\n"
