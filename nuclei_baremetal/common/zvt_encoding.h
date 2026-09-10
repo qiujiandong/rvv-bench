@@ -5,6 +5,7 @@
 #define MSTATUS_MS_INITIAL 0x20000000
 #define MSTATUS_MS_CLEAN 0x40000000
 #define MSTATUS_MS_DIRTY 0x60000000
+#define CSR_MTYPE 0xC23
 
 /*
  * zvt_encoding.h - raw encodings for RISC-V Zvt Vector Matrix Extensions v0.3

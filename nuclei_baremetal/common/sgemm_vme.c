@@ -10,10 +10,9 @@ extern void _sgemm_scalar(float *restrict c, float const *restrict a,
                           float const *restrict b, size_t M, size_t K,
                           size_t N);
 
-static void __enable_vme(void)
-{
-    __RV_CSR_CLEAR(CSR_MSTATUS, MSTATUS_MS);
-    __RV_CSR_SET(CSR_MSTATUS, MSTATUS_MS_INITIAL);
+static void __enable_vme(void) {
+  __RV_CSR_CLEAR(CSR_MSTATUS, MSTATUS_MS);
+  __RV_CSR_SET(CSR_MSTATUS, MSTATUS_MS_INITIAL);
 }
 
 void _sgemm_vme(float *restrict c, float const *restrict a,
@@ -26,15 +25,24 @@ void _sgemm_vme(float *restrict c, float const *restrict a,
 
   __enable_vme();
 
-  uintptr_t vtype;
+  uintptr_t mtype, vtype;
+  uintptr_t tm, tn, tk;
+
   __asm__ volatile("vsetivli zero, 1, e32, m1, ta, ma\n"
                    "csrr %0, vtype"
                    : "=r"(vtype)
                    :
                    : "memory");
   zvt_msetmtype(ZVT_MTYPE_VALUE(0, 0, ZVT_MTWIDEN_1X), vtype);
-  if (zvt_msettm(M) != M || zvt_msettn(N) != N || zvt_msettk(1) != 1) {
-    printf("Wrong tile size\n");
+  tm = zvt_msettm(M);
+  tn = zvt_msettn(N);
+  tk = zvt_msettk(1);
+  mtype = __RV_CSR_READ(CSR_MTYPE);
+  vtype = __RV_CSR_READ(CSR_VTYPE);
+
+  printf("mtype=0x%lx, vtype=0x%lx\n", mtype, vtype);
+  printf("tm=0x%lx, tn=0x%lx, tk=0x%lx\n", tm, tn, tk);
+  if (tm != M || tn != N || tk != 1) {
     return;
   }
 
