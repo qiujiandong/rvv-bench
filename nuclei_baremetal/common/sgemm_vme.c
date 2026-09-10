@@ -30,17 +30,15 @@ void _sgemm_vme(float *restrict c, float const *restrict a,
 
   tn = __riscv_vsetvl_e32m1(N);
   vtype = __RV_CSR_READ(CSR_VTYPE);
-  zvt_msetmtype(ZVT_MTYPE_VALUE(0, 0, ZVT_MTWIDEN_1X), vtype);
-  tm = zvt_msettm(M);
-  tk = zvt_msettk(1);
+  zvt_msetmtype(ZVT_MTYPE_VALUE(M, 1, ZVT_MTWIDEN_1X), vtype);
 
   // mtype = __RV_CSR_READ(CSR_MTYPE);
   // vtype = __RV_CSR_READ(CSR_VTYPE);
   // printf("mtype=0x%lx, vtype=0x%lx\n", mtype, vtype);
   // printf("tm=0x%lx, tn=0x%lx, tk=0x%lx\n", tm, tn, tk);
 
-  if (tn != N || tm != M || tk != 1) {
-    printf("tn=%lu, N=%lu, tm=%lu, M=%lu, tk=%lu, 1\n", tn, N, tm, M, tk);
+  if (tn != N) {
+    printf("tn=%lu, N=%lu\n", tn, N);
     return;
   }
 
