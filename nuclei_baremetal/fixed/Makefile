@@ -20,6 +20,8 @@ STDCLIB = newlib_small
 
 COMMON_FLAGS := -g -O2 -gdwarf-4 -gstrict-dwarf -funroll-loops
 
+LINKER_SCRIPT = ../common/link.ld
+
 ifneq ($(VLM_BASE),)
 COMMON_FLAGS += -DVLM_BASE=$(VLM_BASE)
 endif
