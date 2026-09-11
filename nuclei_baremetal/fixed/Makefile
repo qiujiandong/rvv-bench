@@ -23,7 +23,7 @@ INCDIRS = . ../common
 
 STDCLIB = newlib_small
 
-COMMON_FLAGS := -g -O2 -gdwarf-4 -gstrict-dwarf -funroll-loops
+COMMON_FLAGS := -g -O3 -gdwarf-4 -gstrict-dwarf -funroll-loops
 
 LINKER_SCRIPT = ../common/link.ld
 
