@@ -40,9 +40,7 @@ void sgemm_vme(float *restrict c, float const *restrict a,
 typedef void Func(float *restrict c, float const *restrict a,
                   float const *restrict b, size_t n);
 
-#define IMPLS(f) f(scalar) f(rvv) f(vme)
 #define DECLARE(f) extern Func sgemm_##f;
-
 #define IMPLS(f) f(scalar) f(rvv) f(vme)
 IMPLS(DECLARE)
 

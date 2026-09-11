@@ -1,14 +1,21 @@
+VLM_BASE ?=
+FPGA_TEST ?= 0
+
 TARGET = sgemm
 
 CORE ?= ux1000fd
 
 ARCH_EXT ?= v_zba_zbb_zbc_zbs
 
+ifeq ($(FPGA_TEST),0)
 # Reduce codesize by default
-CODESIZE ?= 1
-
+CODESIZE ?= 0
 # Run with RTL simulation by default
+SIMULATION ?= 0
+else
+CODESIZE ?= 1
 SIMULATION ?= 1
+endif
 
 SRCDIRS = . common
 
@@ -16,6 +23,12 @@ INCDIRS = . common
 
 STDCLIB = newlib_small
 
-COMMON_FLAGS := -O2 -DCUSTOM_HOST -DREAD_MCYCLE -DNOLIBC_DEFINE_ONLY
+COMMON_FLAGS := -g -O3 -DCUSTOM_HOST -DREAD_MCYCLE -DNOLIBC_DEFINE_ONLY -gdwarf-4 -gstrict-dwarf -funroll-loops -fno-tree-vectorize
+
+LINKER_SCRIPT = common/link.ld
+
+ifneq ($(VLM_BASE),)
+COMMON_FLAGS += -DVLM_BASE=$(VLM_BASE)
+endif
 
 include $(NUCLEI_SDK_ROOT)/Build/Makefile.base

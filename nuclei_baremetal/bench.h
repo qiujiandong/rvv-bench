@@ -64,7 +64,7 @@ void init(void);
 #if __STDC_HOSTED__ && !defined(CUSTOM_HOST)
 # include <stdlib.h>
 #else
-static unsigned char *const heap = (unsigned char *)0x7F000000UL;
+static unsigned char *const heap = (unsigned char *)VLM_BASE;
 #endif
 
 
@@ -129,13 +129,13 @@ bench_run(Bench *benches, size_t nBenches)
 
 		size_t N = b->N;
 		print("data: [\n[");
-		for (size_t n = 1; n < N; n = BENCH_NEXT(n))
+		for (size_t n = N_START; n <= N; n = BENCH_NEXT(n))
 			print("%lu,", n);
 		print("],\n");
 
 		for (Impl *i = b->impls; i != b->impls + b->nImpls; ++i) {
 			print("[");
-			for (size_t n = 1; n < N; n = BENCH_NEXT(n)) {
+			for (size_t n = N_START; n <= N; n = BENCH_NEXT(n)) {
 #if VALIDATE
 				ux si = 0, s0 = 0;
 				if (i != b->impls && !i->skipCheck) {
