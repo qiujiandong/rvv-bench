@@ -52,6 +52,11 @@ static ux measure(Sgemm *sgemm, size_t n) {
   return BENCH_GET_USECYC();
 }
 
+__attribute__((noinline)) void  finish_test() {
+  while (1)
+    ;
+}
+
 int main(void) {
   for (size_t i = 0; i < MAT_SIZE * MAT_SIZE; ++i) {
     a[i] = (float)(i % 97) / 97.0f;
@@ -73,5 +78,6 @@ int main(void) {
     ux sum = checksum(MAT_SIZE);
     printf("%s: %lu cycles, checksum=%lu\n", impls[i].name, cycles, sum);
   }
+  finish_test();
   return 0;
 }
