@@ -78,6 +78,8 @@ int main(void) {
     ux sum = checksum(MAT_SIZE);
     printf("%s: %lu cycles, checksum=%lu\n", impls[i].name, cycles, sum);
   }
+#ifndef CFG_SIMULATION
   finish_test();
+#endif
   return 0;
 }
