@@ -34,19 +34,20 @@ void _sgemm_vme(float *restrict c, float const *restrict a,
   for (size_t m0 = 0; m0 < M; m0 += SGEMM_TILE) {
     for (size_t n0 = 0; n0 < N; n0 += 2 * SGEMM_TILE) {
       const bool paired = n0 + SGEMM_TILE < N;
-      for (size_t k0 = 0; k0 < K; k0 += SGEMM_TILE) {
-        zvt_msetmtype(ZVT_MTYPE_VALUE(SGEMM_TILE, 1, ZVT_MTWIDEN_1X),
-                      vtype);
+      zvt_msetmtype(ZVT_MTYPE_VALUE(SGEMM_TILE, 1, ZVT_MTWIDEN_1X),
+                    vtype);
 
-        for (size_t row = 0; row < SGEMM_TILE; ++row) {
-          zvt_vtle32(ZVT_TSS_COL_OF(ZVT_MT0, row),
-                      a + (m0 + row) * K + k0);
-          zvt_vtle32(ZVT_TSS_ROW_OF(ZVT_MT8, row),
-                      c + (m0 + row) * N + n0);
-          if (paired)
-            zvt_vtle32(ZVT_TSS_ROW_OF(ZVT_MT12, row),
-                        c + (m0 + row) * N + n0 + SGEMM_TILE);
-        }
+      for (size_t row = 0; row < SGEMM_TILE; ++row) {
+        zvt_vtle32(ZVT_TSS_COL_OF(ZVT_MT0, row), a + (m0 + row) * K);
+        zvt_vtle32(ZVT_TSS_ROW_OF(ZVT_MT4, row),
+                    c + (m0 + row) * N + n0);
+        if (paired)
+          zvt_vtle32(ZVT_TSS_ROW_OF(ZVT_MT12, row),
+                      c + (m0 + row) * N + n0 + SGEMM_TILE);
+      }
+
+      for (size_t k0 = 0; k0 < K; k0 += SGEMM_TILE) {
+        const unsigned a_tile = k0 / SGEMM_TILE & 1 ? ZVT_MT8 : ZVT_MT0;
 
         __asm__ volatile("vsetvli zero, %[tn], e32, m1, ta, ma\n"
                          :
@@ -77,10 +78,10 @@ void _sgemm_vme(float *restrict c, float const *restrict a,
                 ZVT_C_ASM_WORD(fmm6)
                 ZVT_C_ASM_WORD(fmm7)
                 :
-                : [a_col0] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k)),
-                  [a_col1] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k + 1)),
-                  [a_col2] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k + 2)),
-                  [a_col3] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k + 3)),
+                : [a_col0] "r"(ZVT_TSS_ROW_OF(a_tile, k)),
+                  [a_col1] "r"(ZVT_TSS_ROW_OF(a_tile, k + 1)),
+                  [a_col2] "r"(ZVT_TSS_ROW_OF(a_tile, k + 2)),
+                  [a_col3] "r"(ZVT_TSS_ROW_OF(a_tile, k + 3)),
                   [b0] "r"(b + (k0 + k) * N + n0),
                   [b1] "r"(b + (k0 + k + 1) * N + n0),
                   [b2] "r"(b + (k0 + k + 2) * N + n0),
@@ -89,10 +90,10 @@ void _sgemm_vme(float *restrict c, float const *restrict a,
                   [b5] "r"(b + (k0 + k + 1) * N + n0 + SGEMM_TILE),
                   [b6] "r"(b + (k0 + k + 2) * N + n0 + SGEMM_TILE),
                   [b7] "r"(b + (k0 + k + 3) * N + n0 + SGEMM_TILE),
-                  ZVT_C_ASM_IMM(fmm0, ZVT_ENC_VTFMM_TVV(ZVT_MT8, 8, 16)),
-                  ZVT_C_ASM_IMM(fmm1, ZVT_ENC_VTFMM_TVV(ZVT_MT8, 9, 17)),
-                  ZVT_C_ASM_IMM(fmm2, ZVT_ENC_VTFMM_TVV(ZVT_MT8, 10, 18)),
-                  ZVT_C_ASM_IMM(fmm3, ZVT_ENC_VTFMM_TVV(ZVT_MT8, 11, 19)),
+                  ZVT_C_ASM_IMM(fmm0, ZVT_ENC_VTFMM_TVV(ZVT_MT4, 8, 16)),
+                  ZVT_C_ASM_IMM(fmm1, ZVT_ENC_VTFMM_TVV(ZVT_MT4, 9, 17)),
+                  ZVT_C_ASM_IMM(fmm2, ZVT_ENC_VTFMM_TVV(ZVT_MT4, 10, 18)),
+                  ZVT_C_ASM_IMM(fmm3, ZVT_ENC_VTFMM_TVV(ZVT_MT4, 11, 19)),
                   ZVT_C_ASM_IMM(fmm4, ZVT_ENC_VTFMM_TVV(ZVT_MT12, 8, 20)),
                   ZVT_C_ASM_IMM(fmm5, ZVT_ENC_VTFMM_TVV(ZVT_MT12, 9, 21)),
                   ZVT_C_ASM_IMM(fmm6, ZVT_ENC_VTFMM_TVV(ZVT_MT12, 10, 22)),
@@ -113,30 +114,34 @@ void _sgemm_vme(float *restrict c, float const *restrict a,
                 ZVT_C_ASM_WORD(fmm2)
                 ZVT_C_ASM_WORD(fmm3)
                 :
-                : [a_col0] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k)),
-                  [a_col1] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k + 1)),
-                  [a_col2] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k + 2)),
-                  [a_col3] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k + 3)),
+                : [a_col0] "r"(ZVT_TSS_ROW_OF(a_tile, k)),
+                  [a_col1] "r"(ZVT_TSS_ROW_OF(a_tile, k + 1)),
+                  [a_col2] "r"(ZVT_TSS_ROW_OF(a_tile, k + 2)),
+                  [a_col3] "r"(ZVT_TSS_ROW_OF(a_tile, k + 3)),
                   [b0] "r"(b + (k0 + k) * N + n0),
                   [b1] "r"(b + (k0 + k + 1) * N + n0),
                   [b2] "r"(b + (k0 + k + 2) * N + n0),
                   [b3] "r"(b + (k0 + k + 3) * N + n0),
-                  ZVT_C_ASM_IMM(fmm0, ZVT_ENC_VTFMM_TVV(ZVT_MT8, 8, 16)),
-                  ZVT_C_ASM_IMM(fmm1, ZVT_ENC_VTFMM_TVV(ZVT_MT8, 9, 17)),
-                  ZVT_C_ASM_IMM(fmm2, ZVT_ENC_VTFMM_TVV(ZVT_MT8, 10, 18)),
-                  ZVT_C_ASM_IMM(fmm3, ZVT_ENC_VTFMM_TVV(ZVT_MT8, 11, 19))
+                  ZVT_C_ASM_IMM(fmm0, ZVT_ENC_VTFMM_TVV(ZVT_MT4, 8, 16)),
+                  ZVT_C_ASM_IMM(fmm1, ZVT_ENC_VTFMM_TVV(ZVT_MT4, 9, 17)),
+                  ZVT_C_ASM_IMM(fmm2, ZVT_ENC_VTFMM_TVV(ZVT_MT4, 10, 18)),
+                  ZVT_C_ASM_IMM(fmm3, ZVT_ENC_VTFMM_TVV(ZVT_MT4, 11, 19))
                 : "memory");
           }
+
+          if (k0 + SGEMM_TILE < K)
+            for (size_t row = k; row < k + 4; ++row)
+              zvt_vtle32(ZVT_TSS_COL_OF(a_tile ^ ZVT_MT8, row),
+                          a + (m0 + row) * K + k0 + SGEMM_TILE);
         }
 
-        for (size_t row = 0; row < SGEMM_TILE; ++row)
-          zvt_vtse32(ZVT_TSS_ROW_OF(ZVT_MT8, row),
-                      c + (m0 + row) * N + n0);
-        if (paired)
-          for (size_t row = 0; row < SGEMM_TILE; ++row)
-            zvt_vtse32(ZVT_TSS_ROW_OF(ZVT_MT12, row),
-                        c + (m0 + row) * N + n0 + SGEMM_TILE);
       }
+      for (size_t row = 0; row < SGEMM_TILE; ++row)
+        zvt_vtse32(ZVT_TSS_ROW_OF(ZVT_MT4, row), c + (m0 + row) * N + n0);
+      if (paired)
+        for (size_t row = 0; row < SGEMM_TILE; ++row)
+          zvt_vtse32(ZVT_TSS_ROW_OF(ZVT_MT12, row),
+                      c + (m0 + row) * N + n0 + SGEMM_TILE);
     }
   }
 }
