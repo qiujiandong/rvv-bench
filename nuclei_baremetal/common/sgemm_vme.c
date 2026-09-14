@@ -67,11 +67,15 @@ void _sgemm_vme(float *restrict c, float const *restrict a,
                 "vle32.v v20, (%[b4])\n"
                 "vle32.v v21, (%[b5])\n"
                 "vle32.v v22, (%[b6])\n"
-                "vle32.v v23, (%[b7])\n" ZVT_C_ASM_WORD(fmm0)
-                    ZVT_C_ASM_WORD(fmm1) ZVT_C_ASM_WORD(fmm2)
-                        ZVT_C_ASM_WORD(fmm3) ZVT_C_ASM_WORD(fmm4)
-                            ZVT_C_ASM_WORD(fmm5) ZVT_C_ASM_WORD(fmm6)
-                                ZVT_C_ASM_WORD(fmm7)
+                "vle32.v v23, (%[b7])\n"
+                ZVT_C_ASM_WORD(fmm0)
+                ZVT_C_ASM_WORD(fmm1)
+                ZVT_C_ASM_WORD(fmm2)
+                ZVT_C_ASM_WORD(fmm3)
+                ZVT_C_ASM_WORD(fmm4)
+                ZVT_C_ASM_WORD(fmm5)
+                ZVT_C_ASM_WORD(fmm6)
+                ZVT_C_ASM_WORD(fmm7)
                 :
                 : [a_col0] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k)),
                   [a_col1] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k + 1)),
@@ -103,9 +107,11 @@ void _sgemm_vme(float *restrict c, float const *restrict a,
                 "vle32.v v16, (%[b0])\n"
                 "vle32.v v17, (%[b1])\n"
                 "vle32.v v18, (%[b2])\n"
-                "vle32.v v19, (%[b3])\n" ZVT_C_ASM_WORD(fmm0)
-                    ZVT_C_ASM_WORD(fmm1) ZVT_C_ASM_WORD(fmm2)
-                        ZVT_C_ASM_WORD(fmm3)
+                "vle32.v v19, (%[b3])\n"
+                ZVT_C_ASM_WORD(fmm0)
+                ZVT_C_ASM_WORD(fmm1)
+                ZVT_C_ASM_WORD(fmm2)
+                ZVT_C_ASM_WORD(fmm3)
                 :
                 : [a_col0] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k)),
                   [a_col1] "r"(ZVT_TSS_ROW_OF(ZVT_MT0, k + 1)),
