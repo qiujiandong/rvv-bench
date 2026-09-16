@@ -1,4 +1,4 @@
-VLM_BASE ?=
+MAT_SIZE ?=
 FPGA_TEST ?= 0
 
 TARGET = fixed_test
@@ -23,12 +23,14 @@ INCDIRS = . ../common
 
 STDCLIB = newlib_small
 
-COMMON_FLAGS := -g -O3 -gdwarf-4 -gstrict-dwarf -funroll-loops -fno-tree-vectorize
+AUTOVEC ?= 0
+
+COMMON_FLAGS := -g -O3 -gdwarf-4 -gstrict-dwarf -funroll-loops
 
 LINKER_SCRIPT = ../common/link.ld
 
-ifneq ($(VLM_BASE),)
-COMMON_FLAGS += -DVLM_BASE=$(VLM_BASE)
+ifneq ($(MAT_SIZE),)
+COMMON_FLAGS += -DMAT_SIZE=$(MAT_SIZE)
 endif
 
 include $(NUCLEI_SDK_ROOT)/Build/Makefile.base

@@ -3,10 +3,10 @@
 #include "nmsis_bench.h"
 
 #define MAX_MEM (1024 * 1024)
+#ifndef MAT_SIZE
 #define MAT_SIZE (32)
-#ifndef VLM_BASE
-#define VLM_BASE (0x60000000UL)
 #endif
+
 typedef unsigned long ux;
 
 typedef void Sgemm(float *restrict c, float const *restrict a,
@@ -18,9 +18,9 @@ extern Sgemm _sgemm_vme;
 
 BENCH_DECLARE_VAR();
 
-static float *const c = (float *)VLM_BASE;
-static float *const a = (float *)(VLM_BASE + MAX_MEM / 4);
-static float *const b = (float *)(VLM_BASE + MAX_MEM / 2);
+static float c[MAT_SIZE * MAT_SIZE] __attribute__((section(".vlm_data"))) = {0};
+static float a[MAT_SIZE * MAT_SIZE] __attribute__((section(".vlm_data"))) = {0};
+static float b[MAT_SIZE * MAT_SIZE] __attribute__((section(".vlm_data"))) = {0};
 
 static ux uhash(ux x) {
   /* splitmix64 finalizer */
@@ -43,8 +43,6 @@ static ux checksum(size_t n) {
 }
 
 static ux measure(Sgemm *sgemm, size_t n) {
-  memset(c, 0, n * n * sizeof *c);
-  sgemm(c, a, b, n, n, n);
   memset(c, 0, n * n * sizeof *c);
   BENCH_START(sgemm);
   sgemm(c, a, b, n, n, n);

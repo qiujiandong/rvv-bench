@@ -27,22 +27,27 @@ ENTRY( _start )
 
 /* ILM Memory Information */
 ILM_MEMORY_PRESENT = 1;
-ILM_MEMORY_BASE = 0xA0000000;
+ILM_MEMORY_BASE = 0x80000000;
 ILM_MEMORY_SIZE = 0x20000;
 
 /* DLM Memory Information */
 DLM_MEMORY_PRESENT = 1;
-DLM_MEMORY_BASE = 0xA8000000;
+DLM_MEMORY_BASE = 0xA0000000;
 DLM_MEMORY_SIZE = 0x20000;
+
+VLM_MEMORY_BASE = 0x7F000000;
+VLM_MEMORY_SIZE = 0x100000;
 
 MEMORY
 {
   ilm (rxa!w) : ORIGIN = ILM_MEMORY_BASE,   LENGTH = ILM_MEMORY_SIZE
   ram (wxa!r) : ORIGIN = DLM_MEMORY_BASE,   LENGTH = DLM_MEMORY_SIZE
+  vlm (wxa!r) : ORIGIN = VLM_MEMORY_BASE,   LENGTH = VLM_MEMORY_SIZE
 }
 
 REGION_ALIAS("ROM", ilm)
 REGION_ALIAS("RAM", ram)
+REGION_ALIAS("VLM", vlm)
 REGION_ALIAS("DATA_LMA", ram)
 
 SECTIONS
@@ -172,6 +177,11 @@ SECTIONS
     __rt_utest_tc_tab_end = .;
     . = ALIGN(8);
   } >RAM AT>DATA_LMA
+
+  .vlm_data        : ALIGN(8)
+  {
+    *(.vlm_data .vlm_data.*)
+  } >VLM AT>VLM
 
   .tdata           : ALIGN(8)
   {
