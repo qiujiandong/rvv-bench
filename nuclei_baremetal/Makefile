@@ -7,7 +7,7 @@ CORE ?= ux1000fd
 
 ARCH_EXT ?= v_zba_zbb_zbc_zbs
 
-ifeq ($(FPGA_TEST),0)
+ifeq ($(FPGA_TEST),1)
 # Reduce codesize by default
 CODESIZE ?= 0
 # Run with RTL simulation by default
@@ -23,7 +23,9 @@ INCDIRS = . common
 
 STDCLIB = newlib_small
 
-COMMON_FLAGS := -g -O3 -DCUSTOM_HOST -DREAD_MCYCLE -DNOLIBC_DEFINE_ONLY -gdwarf-4 -gstrict-dwarf -funroll-loops -fno-tree-vectorize
+AUTOVEC ?= 0
+
+COMMON_FLAGS := -g -O3 -DCUSTOM_HOST -DREAD_MCYCLE -DNOLIBC_DEFINE_ONLY -gdwarf-4 -gstrict-dwarf -funroll-loops
 
 LINKER_SCRIPT = common/link.ld
 

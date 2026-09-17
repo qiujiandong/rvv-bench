@@ -10,7 +10,7 @@ void _sgemm_rvv(float *restrict c, float const *restrict a,
   const float *pa, *pin, *pb;
   size_t rows;
   vfloat32m4_t vb0m4, vc0m4, vc1m4, vc2m4, vc3m4;
-  vfloat32m8_t va0m8, vc0m8, vc1m8;
+  vfloat32m8_t vb0m8, vc0m8, vc1m8;
 
   po = c;
   pin = a;
@@ -53,9 +53,9 @@ void _sgemm_rvv(float *restrict c, float const *restrict a,
       vc0m8 = __riscv_vfmv_v_f_f32m8(0.0, vl);
       vc1m8 = __riscv_vmv_v_v_f32m8(vc0m8, vl);
       for (kk = 0; kk < K; kk++) {
-        va0m8 = __riscv_vle32_v_f32m8(pb + kk * N, vl);
-        vc0m8 = __riscv_vfmacc_vf_f32m8(vc0m8, *pa, va0m8, vl);
-        vc1m8 = __riscv_vfmacc_vf_f32m8(vc1m8, *(pa + K), va0m8, vl);
+        vb0m8 = __riscv_vle32_v_f32m8(pb + kk * N, vl);
+        vc0m8 = __riscv_vfmacc_vf_f32m8(vc0m8, *pa, vb0m8, vl);
+        vc1m8 = __riscv_vfmacc_vf_f32m8(vc1m8, *(pa + K), vb0m8, vl);
         pa++;
       }
       __riscv_vse32_v_f32m8(pc, vc0m8, vl);
@@ -76,8 +76,8 @@ void _sgemm_rvv(float *restrict c, float const *restrict a,
       pa = pin;
       vc0m8 = __riscv_vfmv_v_f_f32m8(0.0, vl);
       for (kk = 0; kk < K; kk++) {
-        va0m8 = __riscv_vle32_v_f32m8(pb + kk * N, vl);
-        vc0m8 = __riscv_vfmacc_vf_f32m8(vc0m8, *pa++, va0m8, vl);
+        vb0m8 = __riscv_vle32_v_f32m8(pb + kk * N, vl);
+        vc0m8 = __riscv_vfmacc_vf_f32m8(vc0m8, *pa++, vb0m8, vl);
       }
       __riscv_vse32_v_f32m8(pc, vc0m8, vl);
       pc += vl;

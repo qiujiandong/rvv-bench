@@ -6,7 +6,7 @@
 _Static_assert(MAX_MAT * MAX_MAT * sizeof(float) <= MAX_MEM / 4,
                "matrix must fit in its memory slot");
 /* the byte count for the next run */
-#define N_START (16)
+#define N_START (32)
 #define NEXT(c) (c * 2)
 
 /* minimum number of repeats, to sample median from */
