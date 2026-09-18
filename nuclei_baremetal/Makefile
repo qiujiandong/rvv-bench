@@ -1,4 +1,3 @@
-VLM_BASE ?=
 FPGA_TEST ?= 0
 
 TARGET = sgemm
@@ -28,9 +27,5 @@ AUTOVEC ?= 0
 COMMON_FLAGS := -g -O3 -DCUSTOM_HOST -DREAD_MCYCLE -DNOLIBC_DEFINE_ONLY -gdwarf-4 -gstrict-dwarf -funroll-loops
 
 LINKER_SCRIPT = common/link.ld
-
-ifneq ($(VLM_BASE),)
-COMMON_FLAGS += -DVLM_BASE=$(VLM_BASE)
-endif
 
 include $(NUCLEI_SDK_ROOT)/Build/Makefile.base

@@ -60,11 +60,13 @@ void bench_main(void);
 ux checksum(size_t n);
 void init(void);
 
+static unsigned char vlm_mem[MAX_MEM] __attribute__((section(".vlm_data"))) = {0};
+
 #define MEM_ALIGN 4096
 #if __STDC_HOSTED__ && !defined(CUSTOM_HOST)
 # include <stdlib.h>
 #else
-static unsigned char *const heap = (unsigned char *)VLM_BASE;
+static unsigned char *const heap = (unsigned char *)vlm_mem;
 #endif
 
 
