@@ -8,10 +8,10 @@
 #define CSR_MTYPE 0xC23
 
 /*
- * zvt_encoding.h - raw encodings for RISC-V Zvt Vector Matrix Extensions v0.3
+ * zvt_encoding.h - raw encodings for RISC-V Zvt Vector Matrix Extensions v0.4
  *
- * Source: "Chapter 15. Matrix Extensions", Zvt family Version 0.3,
- * pages 568-583 of the supplied RISC-V Instruction Set Manual excerpt.
+ * Source: "Chapter 12. Matrix Extensions", Zvt family Version 0.4,
+ * pages 564-579 of the supplied RISC-V Instruction Set Manual excerpt.
  *
  * Purpose:
  *   - use Zvt instructions before the assembler knows their mnemonics;
@@ -19,7 +19,7 @@
  *   - make later replacement by official mnemonics straightforward.
  *
  * IMPORTANT:
- *   1. This header follows the supplied v0.3 draft exactly. Draft encodings can change.
+ *   1. This header follows the supplied v0.4 draft exactly. Draft encodings can change.
  *   2. The hardware/ISS must implement the same draft; otherwise execution traps.
  *   3. Raw .4byte instructions are invisible to the compiler's vector/tile register
  *      allocator. Keep RVV loads/stores and raw Zvt arithmetic in the SAME inline-asm
@@ -107,14 +107,10 @@
 #define ZVT_MTWIDEN_4X  3
 
 /* Build the writable low fields used by msetmtype/msetmtypei.
- * tm[13:0] lives at mtype[23:10], tk[2:0] at [6:5], mtwiden[1:0] at [1:0].
+ * tm[13:0] lives at mtype[23:10], tk[2:0] at [7:5], mtwiden[1:0] at [1:0].
  */
 #define ZVT_MTYPE_VALUE(tm, tk, mtwiden) \
-    (ZVT_FIELD((tm), 10, 14) | ZVT_FIELD((tk), 5, 2) | ZVT_FIELD((mtwiden), 0, 2))
-
-/* msetmtypei only carries mtype[4:0], so in v0.3 it can directly encode mtwiden,
- * but not non-zero tm/tk fields. */
-#define ZVT_MTYPEI_LO5(mtwiden) ZVT_FIELD((mtwiden), 0, 2)
+    (ZVT_FIELD((tm), 10, 14) | ZVT_FIELD((tk), 5, 3) | ZVT_FIELD((mtwiden), 0, 2))
 
 /* vsew immediate values used by msetmtypei. */
 #define ZVT_VSEW_8   0
@@ -122,7 +118,10 @@
 #define ZVT_VSEW_32  2
 #define ZVT_VSEW_64  3
 
-/* ---------- Tile Subset Specifier (TSS), spec section 15.1.1.5 ---------- */
+#define ZVT_ALTFMT_NORMAL 0
+#define ZVT_ALTFMT_ALT    1
+
+/* ---------- Tile Subset Specifier (TSS), spec section 12.1.1.5 ---------- */
 
 #define ZVT_TSS_ROW 0
 #define ZVT_TSS_COL 1
@@ -142,8 +141,8 @@
 
 /* Generic Zvt arithmetic encoding. mtd is the architectural tile specifier.
  * Arithmetic instructions encode t[3:1] in rd[4:2], rd[1]=0 and use rd[0]
- * to select the normal/alternate arithmetic form. This matches the v0.3
- * encoding diagram on page 581.
+ * to select the normal/alternate arithmetic form. This matches the v0.4
+ * encoding diagram on page 578.
  */
 #define ZVT_ARITH_RD(mtd, altbit) \
     (ZVT_FIELD(((ZVT_U32(mtd) >> 1)), 2, 3) | ZVT_FIELD((altbit), 0, 1))
@@ -151,28 +150,30 @@
 #define ZVT_ENC_ARITH(funct3, altbit, mtd, vs2, vs1) \
     ZVT_ENC_R(0x79, (vs2), (vs1), (funct3), ZVT_ARITH_RD((mtd), (altbit)), 0x77)
 
-/* ---------- configuration instructions, spec section 15.1.1.4 ---------- */
+/* ---------- configuration instructions, spec section 12.1.1.4 ---------- */
 
 /* msetmtype x0, rs1=mtype, rs2=vtype */
 #define ZVT_ENC_MSETMTYPE(rs1_mtype, rs2_vtype) \
-    ZVT_ENC_R(0x41, (rs2_vtype), (rs1_mtype), 7, 0, 0x57)
+    ZVT_ENC_R(0x42, (rs2_vtype), (rs1_mtype), 7, 0, 0x57)
 
-/* msettn/msettm/msettk share funct7=0x42. Bits [24:20] are a fixed sub-op,
+/* msettn/msettm/msettk share funct7=0x44. Bits [24:20] are a fixed sub-op,
  * not a source-register dependency: 0=tn, 1=tm, 2=tk.
  */
-#define ZVT_ENC_MSETTN(rd, rs1) ZVT_ENC_R(0x42, 0, (rs1), 7, (rd), 0x57)
-#define ZVT_ENC_MSETTM(rd, rs1) ZVT_ENC_R(0x42, 1, (rs1), 7, (rd), 0x57)
-#define ZVT_ENC_MSETTK(rd, rs1) ZVT_ENC_R(0x42, 2, (rs1), 7, (rd), 0x57)
+#define ZVT_ENC_MSETTN(rd, rs1) ZVT_ENC_R(0x44, 0, (rs1), 7, (rd), 0x57)
+#define ZVT_ENC_MSETTM(rd, rs1) ZVT_ENC_R(0x44, 1, (rs1), 7, (rd), 0x57)
+#define ZVT_ENC_MSETTK(rd, rs1) ZVT_ENC_R(0x44, 2, (rs1), 7, (rd), 0x57)
 
-/* msetmtypei: [31:25]=0x42, [24:23]=vsew, [22:20]=011,
- * [19:15]=mtype[4:0], funct3=111, rd=x0, opcode=0x57.
+/* msetmtypei: [31:29]=100, [28]=altfmt, [27:25]=100, [24:23]=vsew,
+ * [22:20]=100, [19:17]=000, [16:15]=mtwiden, funct3=111, rd=x0,
+ * opcode=0x57.
  */
-#define ZVT_ENC_MSETMTYPEI(vsew, mtype_lo5) \
-    (ZVT_FIELD(0x42, 25, 7) | ZVT_FIELD((vsew), 23, 2) | \
-     ZVT_FIELD(3, 20, 3) | ZVT_FIELD((mtype_lo5), 15, 5) | \
+#define ZVT_ENC_MSETMTYPEI(vsew, altfmt, mtwiden) \
+    (ZVT_FIELD(4, 29, 3) | ZVT_FIELD((altfmt), 28, 1) | \
+     ZVT_FIELD(4, 25, 3) | ZVT_FIELD((vsew), 23, 2) | \
+     ZVT_FIELD(4, 20, 3) | ZVT_FIELD((mtwiden), 15, 2) | \
      ZVT_FIELD(7, 12, 3) | ZVT_FIELD(0, 7, 5) | 0x57)
 
-/* ---------- tile subset memory transfers, spec section 15.1.1.6 ---------- */
+/* ---------- tile subset memory transfers, spec section 12.1.1.6 ---------- */
 
 /* EEW code eee in instruction bits [31:29]. */
 #define ZVT_EEW_CODE_8   0
@@ -197,7 +198,7 @@
 #define ZVT_ENC_VTSE32(rs2_tss, rs1_addr) ZVT_ENC_VTSE(ZVT_EEW_CODE_32, (rs2_tss), (rs1_addr))
 #define ZVT_ENC_VTSE64(rs2_tss, rs1_addr) ZVT_ENC_VTSE(ZVT_EEW_CODE_64, (rs2_tss), (rs1_addr))
 
-/* ---------- tile <-> vector moves, spec section 15.1.1.7 ---------- */
+/* ---------- tile <-> vector moves, spec section 12.1.1.7 ---------- */
 
 #define ZVT_ENC_VTMV_V_T(vd, rs1_tss) \
     ZVT_ENC_R(0x21, 31, (rs1_tss), 6, (vd), 0x57)
@@ -205,7 +206,7 @@
 #define ZVT_ENC_VTMV_T_V(rs1_tss, vs2) \
     ZVT_ENC_R(0x2f, (vs2), (rs1_tss), 6, 0, 0x57)
 
-/* ---------- matrix arithmetic, spec section 15.1.1.8 ---------- */
+/* ---------- matrix arithmetic, spec section 12.1.1.8 ---------- */
 
 /* FP: funct3=001; normal/alt selected by encoded rd[0]. */
 #define ZVT_ENC_VTFMM_TVV(mtd, vs2, vs1) \
@@ -221,14 +222,14 @@
 #define ZVT_ENC_VTMMS_TVV(mtd, vs2, vs1) \
     ZVT_ENC_ARITH(0, 1, (mtd), (vs2), (vs1))
 
-/* ---------- tile zero, spec section 15.1.1.9 ---------- */
+/* ---------- tile zero, spec section 12.1.1.9 ---------- */
 
 /* rd[4:1] = tile[3:0], rd[0]=0 */
 #define ZVT_VTZERO_RD(mtd) ZVT_FIELD((mtd), 1, 4)
 #define ZVT_ENC_VTZERO(mtd) \
     ZVT_ENC_R(0x21, 30, 0, 6, ZVT_VTZERO_RD(mtd), 0x57)
 
-/* ---------- context discard, spec section 15.1.1.10 ---------- */
+/* ---------- context discard, spec section 12.1.1.10 ---------- */
 
 #define ZVT_ENC_VTDISCARD \
     ZVT_ENC_R(0x21, 28, 0, 6, 0, 0x57)
@@ -252,14 +253,14 @@
  *         : "memory");
  *
  * The named-immediate pair lets the compiler evaluate the uint32_t encoding, while
- * the assembler only sees the resulting integer through %c[name].
+ * the assembler only sees the resulting integer through %[name].
  */
 
 #ifdef __ASSEMBLER__
 
 #define ZVT_S_WORD(enc)                    .4byte enc
 #define ZVT_S_MSETMTYPE(rs1, rs2)          ZVT_S_WORD(ZVT_ENC_MSETMTYPE((rs1), (rs2)))
-#define ZVT_S_MSETMTYPEI(vsew, mt5)        ZVT_S_WORD(ZVT_ENC_MSETMTYPEI((vsew), (mt5)))
+#define ZVT_S_MSETMTYPEI(vsew, alt, widen) ZVT_S_WORD(ZVT_ENC_MSETMTYPEI((vsew), (alt), (widen)))
 #define ZVT_S_MSETTN(rd, rs1)               ZVT_S_WORD(ZVT_ENC_MSETTN((rd), (rs1)))
 #define ZVT_S_MSETTM(rd, rs1)               ZVT_S_WORD(ZVT_ENC_MSETTM((rd), (rs1)))
 #define ZVT_S_MSETTK(rd, rs1)               ZVT_S_WORD(ZVT_ENC_MSETTK((rd), (rs1)))
@@ -309,14 +310,14 @@
 
 static inline void zvt_msetmtype(uintptr_t mtype_value, uintptr_t vtype_value)
 {
-    __asm__ volatile (".insn r 0x57, 7, 0x41, x0, %0, %1"
+    __asm__ volatile (".insn r 0x57, 7, 0x42, x0, %0, %1"
                       : : "r"(mtype_value), "r"(vtype_value) : "memory");
 }
 
 static inline uintptr_t zvt_msettn(uintptr_t requested_tn)
 {
     uintptr_t actual;
-    __asm__ volatile (".insn r 0x57, 7, 0x42, %0, %1, x0"
+    __asm__ volatile (".insn r 0x57, 7, 0x44, %0, %1, x0"
                       : "=r"(actual) : "r"(requested_tn) : "memory");
     return actual;
 }
@@ -325,7 +326,7 @@ static inline uintptr_t zvt_msettm(uintptr_t requested_tm)
 {
     uintptr_t actual;
     /* rs2 field encodes sub-op 1; it is not a semantic x1 dependency. */
-    __asm__ volatile (".insn r 0x57, 7, 0x42, %0, %1, x1"
+    __asm__ volatile (".insn r 0x57, 7, 0x44, %0, %1, x1"
                       : "=r"(actual) : "r"(requested_tm) : "memory");
     return actual;
 }
@@ -334,7 +335,7 @@ static inline uintptr_t zvt_msettk(uintptr_t requested_tk)
 {
     uintptr_t actual;
     /* rs2 field encodes sub-op 2; it is not a semantic x2 dependency. */
-    __asm__ volatile (".insn r 0x57, 7, 0x42, %0, %1, x2"
+    __asm__ volatile (".insn r 0x57, 7, 0x44, %0, %1, x2"
                       : "=r"(actual) : "r"(requested_tk) : "memory");
     return actual;
 }
