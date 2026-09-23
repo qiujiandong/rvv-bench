@@ -1,8 +1,10 @@
 #include <string.h>
 
 #include "nmsis_bench.h"
+#include "tolerance.h"
 
 #define MAX_MEM (1024 * 1024)
+#define TOLERANCE (1e-5f)
 #ifndef MAT_SIZE
 #define MAT_SIZE (32)
 #endif
@@ -19,6 +21,8 @@ extern Sgemm _sgemm_vme;
 BENCH_DECLARE_VAR();
 
 static float c[MAT_SIZE * MAT_SIZE] __attribute__((section(".vlm_data"))) = {0};
+static float reference[MAT_SIZE * MAT_SIZE]
+    __attribute__((section(".vlm_data"))) = {0};
 static float a[MAT_SIZE * MAT_SIZE] __attribute__((section(".vlm_data"))) = {0};
 static float b[MAT_SIZE * MAT_SIZE] __attribute__((section(".vlm_data"))) = {0};
 
@@ -70,14 +74,21 @@ int main(void) {
       {"vme", _sgemm_vme},
   };
 
+  _sgemm_rvv(reference, a, b, MAT_SIZE, MAT_SIZE, MAT_SIZE);
   printf("measurements:\n");
+  int failed = 0;
   for (size_t i = 0; i < sizeof impls / sizeof *impls; ++i) {
     ux cycles = measure(impls[i].func, MAT_SIZE);
     ux sum = checksum(MAT_SIZE);
-    printf("%s: %lu cycles, checksum=%lu\n", impls[i].name, cycles, sum);
+    float max_error;
+    int pass = compare_f32_tolerance(c, reference, MAT_SIZE * MAT_SIZE,
+                                     TOLERANCE, &max_error);
+    failed |= !pass;
+    printf("%s: %lu cycles, checksum=%lu, %s (max_error=%g)\n",
+           impls[i].name, cycles, sum, pass ? "PASS" : "FAIL", max_error);
   }
 #ifndef CFG_SIMULATION
   finish_test();
 #endif
-  return 0;
+  return failed;
 }
