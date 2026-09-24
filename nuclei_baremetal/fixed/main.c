@@ -17,6 +17,7 @@ typedef void Sgemm(float *restrict c, float const *restrict a,
 extern Sgemm _sgemm_scalar;
 extern Sgemm _sgemm_rvv;
 extern Sgemm _sgemm_vme;
+extern Sgemm _sgemm_vme_asm;
 
 BENCH_DECLARE_VAR();
 
@@ -69,9 +70,10 @@ int main(void) {
     char const *name;
     Sgemm *func;
   } impls[] = {
-      {"scalar", _sgemm_scalar},
+      // {"scalar", _sgemm_scalar},
       {"rvv", _sgemm_rvv},
       {"vme", _sgemm_vme},
+      {"vme asm", _sgemm_vme_asm},
   };
 
   _sgemm_rvv(reference, a, b, MAT_SIZE, MAT_SIZE, MAT_SIZE);

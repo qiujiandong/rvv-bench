@@ -5,7 +5,7 @@ TARGET = fixed_test
 
 CORE ?= ux1000fd
 
-ARCH_EXT ?= v_zba_zbb_zbc_zbs
+ARCH_EXT ?= v_zba_zbb_zbc_zbs_zvtbase_zvtfmm
 
 ifeq ($(FPGA_TEST),1)
 # Reduce codesize by default
