@@ -7,10 +7,6 @@
 #include "nuclei_sdk_soc.h"
 #include "zvt_encoding.h"
 
-extern void _sgemm_scalar(float *restrict c, float const *restrict a,
-                          float const *restrict b, size_t M, size_t K,
-                          size_t N);
-
 #define SGEMM_TILE (32)
 
 static void __enable_vme(void) {
